@@ -48,7 +48,7 @@ const deleteTask = (idToRemove: number) => {
 <template>
   <div class="wrapper min-w-full min-h-full relative">
     <div class="absolute mr-10 top-0 right-0 flex flex-col items-center gap-3">
-      <Switch @click="switchMode()" v-model="darkMode" />
+      <Switch @click="switchMode()" :checked="darkMode" />
       Dark mode
     </div>
     <TodoForm @addNewTask="pasteTasks" />
