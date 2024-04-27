@@ -2,8 +2,7 @@
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
-import { ref } from "vue";
-import type { Ref } from "vue";
+import { ref, defineEmits, Ref } from "vue";
 
 const taskText: Ref<string> = ref("");
 const emits = defineEmits(["addNewTask"]);

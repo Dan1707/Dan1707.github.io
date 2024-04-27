@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import TodoForm from "@/components/TodoForm.vue";
 import TodoContent from "@/components/TodoContent.vue";
-import { ref, Ref, watch } from "vue";
+import { ref, Ref } from "vue";
 import { Switch } from "@/components/ui/switch";
 
 const tasks: Ref<Array<string>> = ref([]);
@@ -37,7 +37,9 @@ const switchMode = () => {
 };
 
 const deleteTask = (idToRemove: number) => {
-  tasks.value = tasks.value.filter((task, taskId) => {
+  tasks.value = tasks.value.filter((task: string, taskId: number) => {
+    console.log(task);
+
     return taskId !== idToRemove;
   });
 

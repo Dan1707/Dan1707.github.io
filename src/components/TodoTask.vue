@@ -1,15 +1,14 @@
 <script setup lang="ts">
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import { Ref, ref } from "vue";
+import { Ref, ref, defineProps } from "vue";
 
-const props = defineProps({
+defineProps({
   taskText: String,
   taskId: Number,
 });
 
 const checkbox: Ref<Boolean> = ref(false);
-const showBtns: Ref<Boolean> = ref(false);
 </script>
 
 <template>

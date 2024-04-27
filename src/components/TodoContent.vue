@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, Ref } from "vue";
+import { ref, computed, defineProps, defineEmits } from "vue";
 
 import TodoTask from "./TodoTask.vue";
 
@@ -17,14 +17,17 @@ import {
 import { Button } from "@/components/ui/button";
 
 const props = defineProps({
-  arr: Array,
+  arr: {
+    type: Array,
+    required: true,
+    default: () => [],
+  },
 });
 
 const emits = defineEmits(["delete"]);
 
-const tasksToShow: Ref<number> = ref(3);
-const pagNum: Ref<number> = ref(1);
-const currentPage: Ref<number> = ref(1);
+const tasksToShow = ref(3);
+const currentPage = ref(1);
 
 const pagPages = computed(() => {
   return Math.ceil(props.arr.length / tasksToShow.value);
@@ -34,7 +37,6 @@ const deleteTask = (taskId: number) => {
   emits("delete", taskId);
 };
 </script>
-
 <template>
   <div
     class="mt-10 flex flex-col items-center max-w-4xl m-auto gap-5 h-[300px] overflow-hidden"
@@ -43,7 +45,7 @@ const deleteTask = (taskId: number) => {
       v-for="(task, id) in arr"
       :key="id"
       @deleteTask="deleteTask(id)"
-      :taskText="task"
+      :taskText="task as string"
       :taskId="id"
     />
   </div>
@@ -66,7 +68,6 @@ const deleteTask = (taskId: number) => {
             v-if="item.type === 'page'"
             :key="index"
             :value="item.value"
-            v-model:value="currentPage"
             @click="currentPage = item.value"
             as-child
           >
