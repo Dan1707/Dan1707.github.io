@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { ref } from "vue";
 
-import { ref, defineEmits, Ref } from "vue";
-
-const taskText: Ref<string> = ref("");
+// vars
+const taskText = ref<string>("");
 const emits = defineEmits(["addNewTask"]);
 
+// sending new task to App.vue
 const addTask = () => {
   if (taskText.value.length > 0) {
     emits("addNewTask", taskText.value);

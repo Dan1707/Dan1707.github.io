@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { ref, computed, defineProps, defineEmits } from "vue";
+import { ref, computed } from "vue";
 
 import TodoTask from "./TodoTask.vue";
-
 import {
   Pagination,
   PaginationEllipsis,
@@ -13,7 +12,6 @@ import {
   PaginationNext,
   PaginationPrev,
 } from "@/components/ui/pagination";
-
 import { Button } from "@/components/ui/button";
 
 const props = defineProps({
@@ -24,17 +22,25 @@ const props = defineProps({
   },
 });
 
-const emits = defineEmits(["delete"]);
+const emits = defineEmits(["delete", "lineThrough"]);
 
+// vars
 const tasksToShow = ref(3);
 const currentPage = ref(1);
 
+// calculating the quantity of pagination pages
 const pagPages = computed(() => {
   return Math.ceil(props.arr.length / tasksToShow.value);
 });
 
+// sending task id to App.vue
 const deleteTask = (taskId: number) => {
   emits("delete", taskId);
+};
+
+// sending emit to App.vue
+const lineThrough = () => {
+  emits("lineThrough");
 };
 </script>
 <template>
@@ -45,7 +51,8 @@ const deleteTask = (taskId: number) => {
       v-for="(task, id) in arr"
       :key="id"
       @deleteTask="deleteTask(id)"
-      :taskText="task as string"
+      @lineThrough="lineThrough"
+      :taskObj="task as object"
       :taskId="id"
     />
   </div>

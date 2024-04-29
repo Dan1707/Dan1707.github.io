@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import TodoForm from "@/components/TodoForm.vue";
 import TodoContent from "@/components/TodoContent.vue";
-import { ref, Ref } from "vue";
+import { ref } from "vue";
 import { Switch } from "@/components/ui/switch";
 
-const tasks: Ref<Array<string>> = ref([]);
+// vars
+const tasks = ref<object[]>([]);
 const darkMode = ref(false);
 
+// localStorage logic
 if (localStorage.getItem("tasks")) {
   tasks.value = JSON.parse(localStorage.getItem("tasks")!);
 }
@@ -15,11 +17,23 @@ if (localStorage.getItem("darkMode")) {
   darkMode.value = JSON.parse(localStorage.getItem("darkMode")!);
 }
 
+// adding new task to "tasks" array
+interface newTaskType {
+  text: string;
+  underline: boolean;
+}
+
 const pasteTasks = (task: string) => {
-  tasks.value.push(task);
+  const newTask: newTaskType = {
+    text: task,
+    underline: false,
+  };
+
+  tasks.value.push(newTask);
   localStorage.setItem("tasks", JSON.stringify(tasks.value));
 };
 
+// switching color theme
 const dark = () => {
   if (darkMode.value) {
     document.body.classList.add("dark");
@@ -30,19 +44,24 @@ const dark = () => {
 };
 
 dark();
-
 const switchMode = () => {
   darkMode.value = !darkMode.value;
   dark();
 };
 
+// deleting the task
 const deleteTask = (idToRemove: number) => {
-  tasks.value = tasks.value.filter((task: string, taskId: number) => {
+  tasks.value = tasks.value.filter((task: object, taskId: number) => {
     console.log(task);
 
     return taskId !== idToRemove;
   });
 
+  localStorage.setItem("tasks", JSON.stringify(tasks.value));
+};
+
+// adding line-through to localStorage
+const lineThrough = () => {
   localStorage.setItem("tasks", JSON.stringify(tasks.value));
 };
 </script>
@@ -54,6 +73,7 @@ const deleteTask = (idToRemove: number) => {
       Dark mode
     </div>
     <TodoForm @addNewTask="pasteTasks" />
-    <TodoContent :arr="tasks" @delete="deleteTask" />
+
+    <TodoContent :arr="tasks" @delete="deleteTask" @lineThrough="lineThrough" />
   </div>
 </template>
