@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ref, computed } from "vue";
 
 import TodoTask from "./TodoTask.vue";
@@ -20,6 +21,11 @@ const props = defineProps({
     required: true,
     default: () => [],
   },
+  filtered: {
+    type: Array,
+    required: true,
+    default: () => [],
+  },
 });
 
 const emits = defineEmits(["delete", "lineThrough"]);
@@ -29,13 +35,13 @@ const tasksToShow = ref(3);
 const currentPage = ref(1);
 
 // calculating the quantity of pagination pages
-const pagPages = computed(() => {
+const pagPages = computed<number>(() => {
   return Math.ceil(props.arr.length / tasksToShow.value);
 });
 
 // sending task id to App.vue
-const deleteTask = (taskId: number) => {
-  emits("delete", taskId);
+const deleteTask = (taskId: number, task: object) => {
+  emits("delete", taskId, task);
 };
 
 // sending emit to App.vue
@@ -44,18 +50,40 @@ const lineThrough = () => {
 };
 </script>
 <template>
-  <div
-    class="mt-10 flex flex-col items-center max-w-4xl m-auto gap-5 h-[300px] overflow-hidden"
-  >
-    <TodoTask
-      v-for="(task, id) in arr"
-      :key="id"
-      @deleteTask="deleteTask(id)"
-      @lineThrough="lineThrough"
-      :taskObj="task as object"
-      :taskId="id"
-    />
-  </div>
+  <Tabs default-value="current" class="m-auto max-w-4xl mt-6">
+    <TabsList class="m-auto flex items-center justify-around">
+      <TabsTrigger class="w-full" value="current">Current tasks</TabsTrigger>
+      <TabsTrigger class="w-full" value="done">Done</TabsTrigger>
+    </TabsList>
+    <TabsContent value="current" class="basis-full">
+      <div
+        class="mt-4 flex flex-col basis-full items-center max-w-4xl m-auto gap-5 h-[300px] overflow-hidden"
+      >
+        <TodoTask
+          v-for="(task, id) in arr"
+          :key="id"
+          @deleteTask="deleteTask"
+          @lineThrough="lineThrough"
+          :taskObj="task as object"
+          :taskId="id"
+        />
+      </div>
+    </TabsContent>
+    <TabsContent value="done" class="basis-full">
+      <div
+        class="mt-4 flex flex-col basis-full items-center max-w-4xl m-auto gap-5 h-[300px] overflow-hidden"
+      >
+        <TodoTask
+          v-for="(task, id) in filtered"
+          :key="id"
+          @deleteTask="deleteTask"
+          @lineThrough="lineThrough"
+          :taskObj="task as object"
+          :taskId="id"
+        />
+      </div>
+    </TabsContent>
+  </Tabs>
 
   <template v-if="arr.length > tasksToShow">
     <Pagination
@@ -64,7 +92,7 @@ const lineThrough = () => {
       :sibling-count="1"
       show-edges
       :default-page="1"
-      class="w-full flex items-center justify-center mt-10"
+      class="w-full flex items-center justify-center mt-4"
     >
       <PaginationList v-slot="{ items }" class="flex items-center gap-1">
         <PaginationFirst @click="currentPage = 1" />

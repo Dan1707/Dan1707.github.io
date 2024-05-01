@@ -18,10 +18,10 @@ if (localStorage.getItem("darkMode")) {
 }
 
 // adding new task to "tasks" array
-interface newTaskType {
+type newTaskType = {
   text: string;
   underline: boolean;
-}
+};
 
 const pasteTasks = (task: string) => {
   const newTask: newTaskType = {
@@ -49,19 +49,60 @@ const switchMode = () => {
   dark();
 };
 
-// deleting the task
-const deleteTask = (idToRemove: number) => {
-  tasks.value = tasks.value.filter((task: object, taskId: number) => {
-    console.log(task);
-
-    return taskId !== idToRemove;
-  });
-
-  localStorage.setItem("tasks", JSON.stringify(tasks.value));
-};
-
 // adding line-through to localStorage
 const lineThrough = () => {
+  localStorage.setItem("tasks", JSON.stringify(tasks.value));
+  doneTasks();
+};
+
+// filtering tasks
+const filteredTasks = ref<object[]>([]);
+
+if (localStorage.getItem("filteredTasks")) {
+  filteredTasks.value = JSON.parse(localStorage.getItem("filteredTasks")!);
+}
+
+const doneTasks = () => {
+  tasks.value.forEach((el: object | any) => {
+    if (el.underline) {
+      filteredTasks.value.push(el);
+      tasks.value = tasks.value.filter((el: object | any) => {
+        return el.underline === false;
+      });
+    }
+  });
+
+  filteredTasks.value.forEach((el: object | any) => {
+    if (el.underline === false) {
+      tasks.value.push(el);
+      filteredTasks.value = filteredTasks.value.filter((el: object | any) => {
+        return el.underline === true;
+      });
+    }
+
+    localStorage.setItem("tasks", JSON.stringify(tasks.value));
+    localStorage.setItem("filteredTasks", JSON.stringify(filteredTasks.value));
+  });
+};
+
+// deleting the task
+const deleteTask = (taskIdToDelete: number, task: newTaskType) => {
+  if (task.underline === false) {
+    tasks.value = tasks.value.filter((task: object, taskId: number) => {
+      console.log(taskId, task);
+
+      return taskId !== taskIdToDelete;
+    });
+  } else {
+    filteredTasks.value = filteredTasks.value.filter(
+      (task: object, taskId: number) => {
+        console.log(taskId, task);
+
+        return taskId !== taskIdToDelete;
+      }
+    );
+  }
+  localStorage.setItem("filteredTasks", JSON.stringify(filteredTasks.value));
   localStorage.setItem("tasks", JSON.stringify(tasks.value));
 };
 </script>
@@ -74,6 +115,11 @@ const lineThrough = () => {
     </div>
     <TodoForm @addNewTask="pasteTasks" />
 
-    <TodoContent :arr="tasks" @delete="deleteTask" @lineThrough="lineThrough" />
+    <TodoContent
+      :arr="tasks"
+      :filtered="filteredTasks"
+      @delete="deleteTask"
+      @lineThrough="lineThrough()"
+    />
   </div>
 </template>
