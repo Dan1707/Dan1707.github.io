@@ -1,12 +1,25 @@
 <script setup lang="ts">
 import TodoForm from "@/components/TodoForm.vue";
 import TodoContent from "@/components/TodoContent.vue";
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import { Switch } from "@/components/ui/switch";
+import {
+  Pagination,
+  PaginationEllipsis,
+  PaginationFirst,
+  PaginationLast,
+  PaginationList,
+  PaginationListItem,
+  PaginationNext,
+  PaginationPrev,
+} from "@/components/ui/pagination";
+import { Button } from "@/components/ui/button";
+import { watch } from "fs";
 
 // vars
 const tasks = ref<object[]>([]);
 const darkMode = ref(false);
+const tasksCopy = ref<object[]>([]);
 
 // localStorage logic
 if (localStorage.getItem("tasks")) {
@@ -31,6 +44,9 @@ const pasteTasks = (task: string) => {
 
   tasks.value.push(newTask);
   localStorage.setItem("tasks", JSON.stringify(tasks.value));
+
+  tasksCopy.value = tasks.value.slice(); // Оновлюємо копію масиву
+  currentPagTasks(); // Оновлюємо сторінку
 };
 
 // switching color theme
@@ -53,6 +69,7 @@ const switchMode = () => {
 const lineThrough = () => {
   localStorage.setItem("tasks", JSON.stringify(tasks.value));
   doneTasks();
+  currentPagTasks();
 };
 
 // filtering tasks
@@ -89,22 +106,45 @@ const doneTasks = () => {
 const deleteTask = (taskIdToDelete: number, task: newTaskType) => {
   if (task.underline === false) {
     tasks.value = tasks.value.filter((task: object, taskId: number) => {
-      console.log(taskId, task);
-
       return taskId !== taskIdToDelete;
     });
   } else {
     filteredTasks.value = filteredTasks.value.filter(
       (task: object, taskId: number) => {
-        console.log(taskId, task);
-
         return taskId !== taskIdToDelete;
       }
     );
   }
+
+  tasksCopy.value = tasks.value.slice();
   localStorage.setItem("filteredTasks", JSON.stringify(filteredTasks.value));
   localStorage.setItem("tasks", JSON.stringify(tasks.value));
+
+  currentPagTasks();
 };
+
+// calculating pagination items
+const tasksToShow = ref(3);
+const currentPage = ref(1);
+let start = ref(0);
+let end = ref(tasksToShow.value);
+
+// calculating current page content
+function currentPagTasks() {
+  start.value = tasksToShow.value * (currentPage.value - 1);
+  end.value = start.value + tasksToShow.value;
+
+  tasksCopy.value = tasks.value.slice(start.value, end.value);
+
+  console.log(start.value, end.value);
+  console.log(currentPage.value);
+}
+
+currentPagTasks();
+// calculating the quantity of pagination pages
+const pagPages = computed<number>(() => {
+  return Math.ceil(tasks.value.length / tasksToShow.value);
+});
 </script>
 
 <template>
@@ -116,10 +156,70 @@ const deleteTask = (taskIdToDelete: number, task: newTaskType) => {
     <TodoForm @addNewTask="pasteTasks" />
 
     <TodoContent
-      :arr="tasks"
+      :arr="tasksCopy"
       :filtered="filteredTasks"
       @delete="deleteTask"
       @lineThrough="lineThrough()"
     />
   </div>
+
+  <tamplate v-if="tasks.length > tasksToShow">
+    <Pagination
+      v-slot="{ page }"
+      :total="pagPages * 10"
+      :sibling-count="1"
+      show-edges
+      :default-page="1"
+      class="w-full flex items-center justify-center mt-4"
+    >
+      <PaginationList v-slot="{ items }" class="flex items-center gap-1">
+        <PaginationFirst
+          @click="
+            currentPage = 1;
+            currentPagTasks();
+          "
+        />
+        <PaginationPrev
+          @click="
+            currentPage--;
+            currentPagTasks();
+          "
+        />
+
+        <template v-for="(item, index) in items">
+          <PaginationListItem
+            v-if="item.type === 'page'"
+            :key="index"
+            :value="item.value"
+            @click="
+              currentPage = item.value;
+              currentPagTasks();
+            "
+            as-child
+          >
+            <Button
+              class="w-10 h-10 p-0"
+              :variant="item.value === page ? 'default' : 'outline'"
+            >
+              {{ item.value }}
+            </Button>
+          </PaginationListItem>
+          <PaginationEllipsis v-else :key="item.type" :index="index" />
+        </template>
+
+        <PaginationNext
+          @click="
+            currentPage++;
+            currentPagTasks();
+          "
+        />
+        <PaginationLast
+          @click="
+            currentPage = items.length;
+            currentPagTasks();
+          "
+        />
+      </PaginationList>
+    </Pagination>
+  </tamplate>
 </template>

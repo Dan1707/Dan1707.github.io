@@ -2,6 +2,8 @@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { SquareX } from "lucide-vue-next";
+import { toast } from "vue-sonner";
+import { Toaster } from "@/components/ui/sonner";
 
 const props = defineProps({
   taskObj: {
@@ -14,10 +16,13 @@ const props = defineProps({
 
 const emits = defineEmits(["lineThrough", "deleteTask"]);
 
-// changing taskObj.underline and sending emit to TodoContent.vue
 const lineThrough = () => {
   props.taskObj.underline = !props.taskObj.underline;
-
+  toast(
+    props.taskObj.underline
+      ? "the task's been done!"
+      : "the task's been sent back to current tasks"
+  );
   emits("lineThrough");
 };
 </script>
@@ -31,20 +36,25 @@ const lineThrough = () => {
     <div class="flex items-center justify-between max-w-fit gap-3 basis-full">
       <Button
         class="flex items-center justify-between gap-1"
-        @click="$emit('deleteTask', taskId, taskObj)"
+        @click="
+          $emit('deleteTask', taskId, taskObj);
+          toast(`The task's been deleted`);
+        "
       >
         <SquareX />
 
         Delete
       </Button>
+
       <Checkbox
         class="w-[40px] min-h-[40px]"
         :checked="taskObj.underline"
         v-model="taskObj.underline"
-        @click="lineThrough"
+        @click="lineThrough()"
       />
     </div>
   </article>
+  <Toaster />
 </template>
 
 <style lang="scss" scoped>
